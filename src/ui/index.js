@@ -88,8 +88,23 @@ addOnUISdk.ready.then(async () => {
             container.remove();
             // Remove the expression from the calculator
             calculator.removeExpression({ id: `graph${index}` });
+            // Reindex remaining equations
+            reindexEquations();
             updateGraph();
         }
+    }
+
+    // Function to reindex equations after removal
+    function reindexEquations() {
+        const containers = document.querySelectorAll('.equation-container');
+        containers.forEach((container, newIndex) => {
+            container.setAttribute('data-index', newIndex);
+            const input = container.querySelector('input');
+            if (input) {
+                input.id = `equation-${newIndex}`;
+            }
+        });
+        equationCount = containers.length;
     }
 
     // Function to update the graph with all equations
@@ -100,8 +115,9 @@ addOnUISdk.ready.then(async () => {
 
         document.querySelectorAll('.equation-container').forEach((container, index) => {
             const input = document.getElementById(`equation-${index}`);
-            const equation = input.value.trim();
+            if (!input) return; // Skip if input doesn't exist
             
+            const equation = input.value.trim();
             if (equation) {
                 hasValidEquation = true;
                 const formattedEquation = formatEquation(equation);
