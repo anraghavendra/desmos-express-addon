@@ -1,241 +1,286 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta
-            name="description"
-            content="Convert mathematical equations into beautiful graphs using Desmos"
-        />
-        <meta name="keywords" content="Adobe, Express, Add-On, Desmos, Math, Graphs" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Desmos Graph Maker</title>
-        <style>
-            .container {
-                margin: 16px;
-                padding-right: 16px;
-                display: flex;
-                flex-direction: column;
-                gap: 12px;
-                max-width: calc(100% - 16px);
-                overflow-x: hidden;
-                box-sizing: border-box;
-            }
 
-            .input-container {
-                display: flex;
-                flex-direction: column;
-                gap: 8px;
-                width: 100%;
-                box-sizing: border-box;
-            }
+<head>
+    <meta charset="UTF-8" />
+    <meta name="description" content="Convert mathematical equations into beautiful graphs using Desmos" />
+    <meta name="keywords" content="Adobe, Express, Add-On, Desmos, Math, Graphs" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Desmos Graph Maker</title>
+    <style>
+        .container {
+            margin: 16px;
+            padding-right: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-width: calc(100% - 16px);
+            overflow-x: hidden;
+            box-sizing: border-box;
+        }
 
-            .equation-container {
-                display: flex;
-                flex-direction: column;
-                gap: 8px;
-                margin-bottom: 8px;
-                width: 100%;
-            }
+        .input-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 100%;
+            box-sizing: border-box;
+        }
 
-            .slider-container {
-                display: flex;
-                flex-direction: column;
-                gap: 4px;
-                margin-top: 4px;
-                padding: 8px;
-                background-color: #f5f5f5;
-                border-radius: 4px;
-            }
+        .equation-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 8px;
+            width: 100%;
+        }
 
-            .slider-item {
-                display: flex;
-                align-items: center;
-                gap: 8px;
-            }
+        .slider-container {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-top: 4px;
+            padding: 8px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
 
-            .slider-item label {
-                min-width: 40px;
-                font-size: 12px;
-            }
+        .slider-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
 
-            .slider-item input[type="range"] {
-                flex: 1;
-            }
+        .slider-item label {
+            min-width: 40px;
+            font-size: 12px;
+        }
 
-            .slider-item input[type="number"] {
-                width: 60px;
-            }
+        .slider-item input[type="range"] {
+            flex: 1;
+        }
 
-            input {
-                padding: 8px;
-                border: 1px solid #ccc;
-                border-radius: 4px;
-                font-size: 14px;
-            }
+        .slider-item input[type="number"] {
+            width: 60px;
+        }
 
-            button {
-                background-color: rgb(82, 88, 228);
-                border-color: rgb(82, 88, 228);
-                border-radius: 16px;
-                border-style: solid;
-                color: rgb(255, 255, 255);
-                font-family: sans-serif;
-                height: 32px;
-                padding: 0 16px;
-            }
+        input {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
 
-            button:disabled {
-                background-color: rgb(177, 177, 177);
-                border-color: rgb(177, 177, 177);
-            }
+        button {
+            background-color: rgb(82, 88, 228);
+            border-color: rgb(82, 88, 228);
+            border-radius: 16px;
+            border-style: solid;
+            color: rgb(255, 255, 255);
+            font-family: sans-serif;
+            height: 32px;
+            padding: 0 16px;
+        }
 
-            button:not([disabled]):hover {
-                background-color: rgb(64, 70, 202);
-                cursor: pointer;
-            }
+        button:disabled {
+            background-color: rgb(177, 177, 177);
+            border-color: rgb(177, 177, 177);
+        }
 
-            #graph-container {
-                width: calc(100% - 8px);
-                height: 300px;
-                border: 1px solid #ccc;
-                border-radius: 4px;
-                margin-top: 8px;
-                box-sizing: border-box;
-            }
+        button:not([disabled]):hover {
+            background-color: rgb(64, 70, 202);
+            cursor: pointer;
+        }
 
-            .examples {
-                font-size: 12px;
-                color: #666;
-                margin-top: 8px;
-            }
+        #graph-container {
+            width: calc(100% - 8px);
+            height: 300px;
+            border: 1px solid #ccc;
+            margin-bottom: 16px;
+        }
 
-            .button-container {
-                display: flex;
-                gap: 8px;
-            }
+        .prompt-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
 
-            .add-equation-button {
-                background-color: rgb(82, 88, 228);
-                border-color: rgb(82, 88, 228);
-                border-radius: 16px;
-                border-style: solid;
-                color: rgb(255, 255, 255);
-                font-family: sans-serif;
-                height: 32px;
-                padding: 0 16px;
-                margin-top: 8px;
-            }
+        .prompt-container textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+            resize: vertical;
+        }
 
-            .remove-equation-button {
-                background-color: rgb(255, 59, 48);
-                border-color: rgb(255, 59, 48);
-                border-radius: 16px;
-                border-style: solid;
-                color: rgb(255, 255, 255);
-                font-family: sans-serif;
-                height: 32px;
-                padding: 0 16px;
-                margin-left: 8px;
-            }
+        .prompt-container button {
+            align-self: flex-end;
+        }
 
-            .graph-settings {
-                margin-top: 16px;
-                padding: 12px;
-                background-color: #f5f5f5;
-                border-radius: 4px;
-            }
+        .examples {
+            font-size: 12px;
+            color: #666;
+            margin-top: 8px;
+        }
 
-            .graph-settings h3 {
-                margin: 0 0 12px 0;
-                font-size: 14px;
-                color: #333;
-            }
+        .examples ul {
+            margin: 4px 0;
+            padding-left: 16px;
+        }
 
-            .axis-settings {
-                display: grid;
-                grid-template-columns: repeat(3, 1fr);
-                gap: 12px;
-            }
+        .examples li {
+            margin: 2px 0;
+        }
 
-            .axis-setting {
-                display: flex;
-                flex-direction: column;
-                gap: 4px;
-            }
+        .button-container {
+            display: flex;
+            gap: 8px;
+        }
 
-            .axis-setting label {
-                font-size: 12px;
-                color: #666;
-            }
+        .add-equation-button {
+            background-color: rgb(82, 88, 228);
+            border-color: rgb(82, 88, 228);
+            border-radius: 16px;
+            border-style: solid;
+            color: rgb(255, 255, 255);
+            font-family: sans-serif;
+            height: 32px;
+            padding: 0 16px;
+            margin-top: 8px;
+        }
 
-            .axis-setting input {
-                width: 100%;
-                max-width: 90px;
-                padding: 6px;
-                border: 1px solid #ccc;
-                border-radius: 4px;
-                font-size: 12px;
-            }
+        .remove-equation-button {
+            background-color: rgb(255, 59, 48);
+            border-color: rgb(255, 59, 48);
+            border-radius: 16px;
+            border-style: solid;
+            color: rgb(255, 255, 255);
+            font-family: sans-serif;
+            height: 32px;
+            padding: 0 16px;
+            margin-left: 8px;
+        }
 
-            .input-container input {
-                width: 100%;
-                max-width: 100%;
-                box-sizing: border-box;
-            }
-        </style>
-    </head>
-    <body>
-        <!-- 
+        .graph-settings {
+            margin-top: 16px;
+            padding: 12px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+
+        .graph-settings h3 {
+            margin: 0 0 12px 0;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .axis-settings {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .axis-setting {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .axis-setting label {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .axis-setting input {
+            width: 100%;
+            max-width: 90px;
+            padding: 6px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .input-container input {
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 
             Please note that this document does not use the spectrum web components theme for Express.
             You may use "addOnUISdk.app.ui.theme" to get the current theme and style accordingly.
         -->
-        <div class="container">
-            <div id="equations-container">
-                <div class="equation-container" data-index="0">
-                    <div class="input-container">
-                        <label for="equation-0">Enter your equation:</label>
-                        <input type="text" id="equation-0" placeholder="e.g., y = x^2, y = sin(x), y = sqrt(x), y = 2x + 3" />
-                    </div>
-                </div>
+    <div class="container">
+        <div class="prompt-container">
+            <textarea id="gemini-prompt"
+                placeholder="Ask Gemini to create graph art (e.g., 'Create a heart shape using parametric equations')"></textarea>
+            <div class="examples">
+                Try prompts like:
+                <ul>
+                    <li>"Create a heart shape"</li>
+                    <li>"Draw a flower with 5 petals"</li>
+                    <li>"Make a butterfly shape"</li>
+                    <li>"Create a spiral pattern"</li>
+                    <li>"Draw a star with 6 points"</li>
+                </ul>
             </div>
-            <div class="button-container">
-                <button id="addEquation" class="add-equation-button">+ Add Equation</button>
-            </div>
-            <div class="button-container">
-                <button id="createGraph" disabled>Create Graph</button>
-            </div>
-            <div id="graph-container"></div>
-            <div class="graph-settings">
-                <h3>Graph Settings</h3>
-                <div class="axis-settings">
-                    <div class="axis-setting">
-                        <label for="xMin">X Min:</label>
-                        <input type="number" id="xMin" value="-10" step="1">
-                    </div>
-                    <div class="axis-setting">
-                        <label for="xMax">X Max:</label>
-                        <input type="number" id="xMax" value="10" step="1">
-                    </div>
-                    <div class="axis-setting">
-                        <label for="yMin">Y Min:</label>
-                        <input type="number" id="yMin" value="-10" step="1">
-                    </div>
-                    <div class="axis-setting">
-                        <label for="yMax">Y Max:</label>
-                        <input type="number" id="yMax" value="10" step="1">
-                    </div>
-                    <div class="axis-setting">
-                        <label for="xStep">X Step:</label>
-                        <input type="number" id="xStep" value="1" step="0.1">
-                    </div>
-                    <div class="axis-setting">
-                        <label for="yStep">Y Step:</label>
-                        <input type="number" id="yStep" value="1" step="0.1">
-                    </div>
+            <div id="error-message" style="color: #c00; font-size: 13px; min-height: 18px; margin-top: 4px;"></div>
+            <button id="generate-graph">Generate Graph</button>
+        </div>
+        <div id="equations-container">
+            <div class="equation-container" data-index="0">
+                <div class="input-container">
+                    <label for="equation-0">Enter your equation:</label>
+                    <input type="text" id="equation-0"
+                        placeholder="e.g., y = x^2, y = sin(x), y = sqrt(x), y = 2x + 3" />
                 </div>
             </div>
         </div>
+        <div class="button-container">
+            <button id="addEquation" class="add-equation-button">+ Add Equation</button>
+        </div>
+        <div class="button-container">
+            <button id="createGraph" disabled>Create Graph</button>
+        </div>
+        <div id="graph-container"></div>
+        <div class="graph-settings">
+            <h3>Graph Settings</h3>
+            <div class="axis-settings">
+                <div class="axis-setting">
+                    <label for="xMin">X Min:</label>
+                    <input type="number" id="xMin" value="-10" step="1">
+                </div>
+                <div class="axis-setting">
+                    <label for="xMax">X Max:</label>
+                    <input type="number" id="xMax" value="10" step="1">
+                </div>
+                <div class="axis-setting">
+                    <label for="yMin">Y Min:</label>
+                    <input type="number" id="yMin" value="-10" step="1">
+                </div>
+                <div class="axis-setting">
+                    <label for="yMax">Y Max:</label>
+                    <input type="number" id="yMax" value="10" step="1">
+                </div>
+                <div class="axis-setting">
+                    <label for="xStep">X Step:</label>
+                    <input type="number" id="xStep" value="1" step="0.1">
+                </div>
+                <div class="axis-setting">
+                    <label for="yStep">Y Step:</label>
+                    <input type="number" id="yStep" value="1" step="0.1">
+                </div>
+            </div>
+        </div>
+    </div>
 
-        <script type="module" src="ui/index.js"></script>
-    </body>
+    <script type="module" src="ui/index.js"></script>
+</body>
+
 </html>

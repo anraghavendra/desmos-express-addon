@@ -9,6 +9,73 @@ addOnUISdk.ready.then(async () => {
     const addEquationButton = document.getElementById("addEquation");
     const createGraphButton = document.getElementById("createGraph");
     const graphContainer = document.getElementById("graph-container");
+    const geminiPrompt = document.getElementById("gemini-prompt");
+    const generateGraphButton = document.getElementById("generate-graph");
+
+    // Function to handle Gemini prompt
+    async function handleGeminiPrompt() {
+        const prompt = geminiPrompt.value.trim();
+        if (!prompt) return;
+
+        // Clear previous error
+        const errorDiv = document.getElementById('error-message');
+        if (errorDiv) errorDiv.textContent = '';
+
+        try {
+            generateGraphButton.disabled = true;
+            generateGraphButton.textContent = "Generating...";
+
+            // Use the correct Gemini v1 endpoint with the new Gemini 2.0 Flash model
+            const response = await fetch("https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=AIzaSyDyYgfRTQP2pSl2hkJyXjjUfstdWJE6k2E", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [{
+                            text: `You are a math expert. Convert this request into Desmos equations: "${prompt}". \nReturn ONLY the equations in a format that can be directly used in Desmos, one per line.\nFor example, if the request is \"create a heart shape\", you might return:\nx^2 + (y - sqrt(abs(x)))^2 = 1\nx^2 + (y + sqrt(abs(x)))^2 = 1`
+                        }]
+                    }]
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error?.message || "Failed to generate equations");
+            }
+
+            const equations = data.candidates[0].content.parts[0].text
+                .split('\n')
+                .map(line => line.trim())
+                .filter(line => line && !line.startsWith('```'));
+
+            equationsContainer.innerHTML = '';
+            equationCount = 0;
+
+            equations.forEach((equation, index) => {
+                const container = createEquationInput(index);
+                const input = container.querySelector('input');
+                input.value = equation;
+                equationsContainer.appendChild(container);
+                equationCount++;
+            });
+
+            updateGraph();
+            geminiPrompt.value = "";
+
+        } catch (error) {
+            console.error("Error processing Gemini prompt:", error);
+            if (errorDiv) errorDiv.textContent = "Failed to generate equations: " + error.message;
+        } finally {
+            generateGraphButton.disabled = false;
+            generateGraphButton.textContent = "Generate Graph";
+        }
+    }
+
+    // Add event listener for the generate graph button
+    generateGraphButton.addEventListener("click", handleGeminiPrompt);
 
     const script = document.createElement("script");
     script.src = "https://www.desmos.com/api/v1.7/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6";
@@ -34,7 +101,7 @@ addOnUISdk.ready.then(async () => {
     function formatEquation(equation) {
         // First handle sqrt with its argument
         equation = equation.replace(/\bsqrt\s*\(([^)]+)\)/g, '\\sqrt{$1}');
-        
+
         // Then handle other functions
         return equation
             .replace(/\bsin\b/g, '\\sin')
@@ -52,7 +119,7 @@ addOnUISdk.ready.then(async () => {
         // Remove spaces and split by operators
         const cleanEq = equation.replace(/\s+/g, '');
         const variables = new Set();
-        
+
         // Match variables (letters that are not part of function names)
         const matches = cleanEq.match(/[a-zA-Z]+/g);
         if (matches) {
@@ -63,7 +130,7 @@ addOnUISdk.ready.then(async () => {
                 }
             });
         }
-        
+
         return Array.from(variables);
     }
 
@@ -135,7 +202,7 @@ addOnUISdk.ready.then(async () => {
         document.querySelectorAll('.equation-container').forEach((container, index) => {
             const input = document.getElementById(`equation-${index}`);
             if (!input) return;
-            
+
             const equation = input.value.trim();
             if (equation) {
                 hasValidEquation = true;
@@ -193,10 +260,10 @@ addOnUISdk.ready.then(async () => {
         addEquationButton.addEventListener('click', () => {
             const newContainer = createEquationInput(equationCount);
             equationsContainer.appendChild(newContainer);
-            
+
             // Add event listener for the new input
             document.getElementById(`equation-${equationCount}`).addEventListener('input', updateGraph);
-            
+
             equationCount++;
         });
 
