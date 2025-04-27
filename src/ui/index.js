@@ -102,6 +102,9 @@ addOnUISdk.ready.then(async () => {
         // First handle sqrt with its argument
         equation = equation.replace(/\bsqrt\s*\(([^)]+)\)/g, '\\sqrt{$1}');
 
+        // Replace 'theta' (case-insensitive) and the Unicode θ symbol with LaTeX \\theta
+        equation = equation.replace(/theta/gi, '\\theta').replace(/θ/g, '\\theta');
+
         // Then handle other functions
         return equation
             .replace(/\bsin\b/g, '\\sin')
