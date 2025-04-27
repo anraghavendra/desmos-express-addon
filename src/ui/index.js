@@ -28,6 +28,23 @@ addOnUISdk.ready.then(async () => {
         return new Blob([ab], { type: mimeString });
     }
 
+    // Function to format special functions in LaTeX
+    function formatEquation(equation) {
+        // First handle sqrt with its argument
+        equation = equation.replace(/\bsqrt\s*\(([^)]+)\)/g, '\\sqrt{$1}');
+        
+        // Then handle other functions
+        return equation
+            .replace(/\bsin\b/g, '\\sin')
+            .replace(/\bcos\b/g, '\\cos')
+            .replace(/\btan\b/g, '\\tan')
+            .replace(/\blog\b/g, '\\log')
+            .replace(/\bln\b/g, '\\ln')
+            .replace(/\bexp\b/g, '\\exp')
+            .replace(/\babs\b/g, '\\left|')
+            .replace(/\bpi\b/g, '\\pi');
+    }
+
     script.onload = () => {
         calculator = Desmos.GraphingCalculator(graphContainer, {
             keypad: false,
@@ -41,9 +58,10 @@ addOnUISdk.ready.then(async () => {
             const equation = equationInput.value.trim();
             calculator.setExpressions([]);
             if (equation) {
+                const formattedEquation = formatEquation(equation);
                 calculator.setExpression({
                     id: "graph1",
-                    latex: equation
+                    latex: formattedEquation
                 });
                 createGraphButton.disabled = false;
             } else {
@@ -53,6 +71,7 @@ addOnUISdk.ready.then(async () => {
 
         createGraphButton.addEventListener("click", async () => {
             const equation = equationInput.value.trim();
+            const formattedEquation = formatEquation(equation);
             const imageDataUrl = calculator.screenshot({
                 width: 800,
                 height: 600,
