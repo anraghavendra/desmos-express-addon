@@ -47,6 +47,26 @@ addOnUISdk.ready.then(async () => {
             .replace(/\bpi\b/g, '\\pi');
     }
 
+    // Function to extract variables from an equation
+    function extractVariables(equation) {
+        // Remove spaces and split by operators
+        const cleanEq = equation.replace(/\s+/g, '');
+        const variables = new Set();
+        
+        // Match variables (letters that are not part of function names)
+        const matches = cleanEq.match(/[a-zA-Z]+/g);
+        if (matches) {
+            matches.forEach(match => {
+                // Skip if it's a function name or 'x'/'y'
+                if (!['sin', 'cos', 'tan', 'log', 'ln', 'exp', 'sqrt', 'x', 'y'].includes(match.toLowerCase())) {
+                    variables.add(match);
+                }
+            });
+        }
+        
+        return Array.from(variables);
+    }
+
     // Function to create a new equation input
     function createEquationInput(index) {
         const equationContainer = document.createElement('div');
@@ -109,13 +129,12 @@ addOnUISdk.ready.then(async () => {
 
     // Function to update the graph with all equations
     function updateGraph() {
-        // Clear all expressions first
         calculator.setExpressions([]);
         let hasValidEquation = false;
 
         document.querySelectorAll('.equation-container').forEach((container, index) => {
             const input = document.getElementById(`equation-${index}`);
-            if (!input) return; // Skip if input doesn't exist
+            if (!input) return;
             
             const equation = input.value.trim();
             if (equation) {
@@ -141,6 +160,34 @@ addOnUISdk.ready.then(async () => {
 
         // Add event listener for the first equation input
         document.getElementById('equation-0').addEventListener('input', updateGraph);
+
+        // Add event listeners for axis settings
+        const axisInputs = ['xMin', 'xMax', 'yMin', 'yMax', 'xStep', 'yStep'];
+        axisInputs.forEach(inputId => {
+            document.getElementById(inputId).addEventListener('change', updateAxisSettings);
+        });
+
+        // Function to update axis settings
+        function updateAxisSettings() {
+            const xMin = parseFloat(document.getElementById('xMin').value);
+            const xMax = parseFloat(document.getElementById('xMax').value);
+            const yMin = parseFloat(document.getElementById('yMin').value);
+            const yMax = parseFloat(document.getElementById('yMax').value);
+            const xStep = parseFloat(document.getElementById('xStep').value);
+            const yStep = parseFloat(document.getElementById('yStep').value);
+
+            calculator.setMathBounds({
+                left: xMin,
+                right: xMax,
+                bottom: yMin,
+                top: yMax
+            });
+
+            calculator.setGraphSettings({
+                xAxisStep: xStep,
+                yAxisStep: yStep
+            });
+        }
 
         // Add event listener for the "Add Equation" button
         addEquationButton.addEventListener('click', () => {
