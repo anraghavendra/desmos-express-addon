@@ -242,7 +242,148 @@ addOnUISdk.ready.then(async () => {
         return equations;
     }
 
-    // Function to generate questions based on the current graph
+    // Function to create a question card
+    function createQuestionCard(question) {
+        const card = document.createElement('div');
+        card.className = 'question-card';
+        card.textContent = question;
+        
+        // Enable drag to document for the entire card
+        addOnUISdk.app.enableDragToDocument(card, {
+            previewCallback: (element) => {
+                // Create a temporary canvas for preview
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                // Get the card's dimensions and add padding
+                const rect = element.getBoundingClientRect();
+                const padding = 20; // Extra padding to prevent cutoff
+                canvas.width = rect.width + (padding * 2);
+                canvas.height = rect.height + (padding * 2);
+                
+                // Get computed styles
+                const styles = window.getComputedStyle(element);
+                
+                // Draw the card background
+                ctx.fillStyle = styles.backgroundColor;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Draw the border
+                ctx.strokeStyle = styles.borderColor;
+                ctx.lineWidth = parseInt(styles.borderWidth);
+                ctx.strokeRect(padding, padding, rect.width, rect.height);
+                
+                // Draw the text
+                ctx.font = styles.font;
+                ctx.fillStyle = styles.color;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                // Word wrap the text
+                const words = question.split(' ');
+                const maxWidth = rect.width - 32; // Padding
+                let lines = [];
+                let currentLine = '';
+                
+                words.forEach(word => {
+                    const testLine = currentLine + word + ' ';
+                    const metrics = ctx.measureText(testLine);
+                    if (metrics.width > maxWidth) {
+                        lines.push(currentLine);
+                        currentLine = word + ' ';
+                    } else {
+                        currentLine = testLine;
+                    }
+                });
+                lines.push(currentLine);
+                
+                // Draw each line
+                const lineHeight = parseInt(styles.lineHeight);
+                const startY = padding + (rect.height - (lines.length * lineHeight)) / 2;
+                
+                lines.forEach((line, i) => {
+                    ctx.fillText(line.trim(), padding + (rect.width / 2), startY + (i * lineHeight));
+                });
+                
+                return new URL(canvas.toDataURL('image/png'));
+            },
+            completionCallback: async (element) => {
+                // Create the final image
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                // Get the card's dimensions and add padding
+                const rect = element.getBoundingClientRect();
+                const padding = 20; // Extra padding to prevent cutoff
+                canvas.width = rect.width + (padding * 2);
+                canvas.height = rect.height + (padding * 2);
+                
+                // Get computed styles
+                const styles = window.getComputedStyle(element);
+                
+                // Draw the card background
+                ctx.fillStyle = styles.backgroundColor;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Draw the border
+                ctx.strokeStyle = styles.borderColor;
+                ctx.lineWidth = parseInt(styles.borderWidth);
+                ctx.strokeRect(padding, padding, rect.width, rect.height);
+                
+                // Draw the text
+                ctx.font = styles.font;
+                ctx.fillStyle = styles.color;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                // Word wrap the text
+                const words = question.split(' ');
+                const maxWidth = rect.width - 32; // Padding
+                let lines = [];
+                let currentLine = '';
+                
+                words.forEach(word => {
+                    const testLine = currentLine + word + ' ';
+                    const metrics = ctx.measureText(testLine);
+                    if (metrics.width > maxWidth) {
+                        lines.push(currentLine);
+                        currentLine = word + ' ';
+                    } else {
+                        currentLine = testLine;
+                    }
+                });
+                lines.push(currentLine);
+                
+                // Draw each line
+                const lineHeight = parseInt(styles.lineHeight);
+                const startY = padding + (rect.height - (lines.length * lineHeight)) / 2;
+                
+                lines.forEach((line, i) => {
+                    ctx.fillText(line.trim(), padding + (rect.width / 2), startY + (i * lineHeight));
+                });
+                
+                // Convert to blob
+                const blob = await new Promise(resolve => {
+                    canvas.toBlob(resolve, 'image/png');
+                });
+                
+                return [{ blob }];
+            }
+        });
+
+        // Add drag event listeners for visual feedback
+        card.addEventListener('dragstart', () => {
+            card.classList.add('dragging');
+        });
+        
+        card.addEventListener('dragend', () => {
+            card.classList.remove('dragging');
+        });
+
+        return card;
+    }
+
+    // Function to handle question generation
     async function generateQuestions() {
         const equations = getCurrentGraphEquations();
         if (equations.length === 0) {
@@ -250,34 +391,21 @@ addOnUISdk.ready.then(async () => {
             return;
         }
 
-        const selectedTypes = Object.entries(questionTypeCheckboxes)
-            .filter(([_, checkbox]) => checkbox.checked)
-            .map(([type, _]) => type);
-
-        if (selectedTypes.length === 0) {
-            questionsOutput.innerHTML = '<div class="error">Please select at least one question type.</div>';
-            return;
-        }
-
-        const difficulty = difficultySelect.value;
-        generateQuestionsButton.disabled = true;
-        generateQuestionsButton.textContent = "Generating...";
-        questionsOutput.innerHTML = '<div class="loading">Generating questions...</div>';
-
         try {
-            const prompt = `Generate ${difficulty} difficulty math questions based on these equations: ${equations.join(', ')}. 
-            Include questions about: ${selectedTypes.join(', ')}. 
-            Format each question with a clear question text and answer. 
-            Return ONLY a valid JSON object with this exact structure (no markdown formatting, no additional text):
-            {
-                "questions": [
-                    {
-                        "type": "question type",
-                        "question": "question text",
-                        "answer": "answer text"
-                    }
-                ]
-            }`;
+            generateQuestionsButton.disabled = true;
+            generateQuestionsButton.textContent = "Generating...";
+
+            const selectedTypes = Object.entries(questionTypeCheckboxes)
+                .filter(([_, checkbox]) => checkbox.checked)
+                .map(([type, _]) => type);
+
+            if (selectedTypes.length === 0) {
+                throw new Error("Please select at least one question type");
+            }
+
+            const prompt = `Generate ${selectedTypes.length} ${difficultySelect.value} difficulty math questions based on these equations: ${equations.join(', ')}. 
+                Question types: ${selectedTypes.join(', ')}. 
+                Return each question on a new line.`;
 
             const response = await fetch(`${config.api.gemini.endpoint}?key=${config.api.gemini.key}`, {
                 method: "POST",
@@ -294,26 +422,25 @@ addOnUISdk.ready.then(async () => {
             });
 
             const data = await response.json();
+
             if (!response.ok) {
                 throw new Error(data.error?.message || "Failed to generate questions");
             }
 
-            const questionsText = data.candidates[0].content.parts[0].text;
-            // Remove markdown formatting if present
-            const cleanJson = questionsText.replace(/```json\n?|\n?```/g, '').trim();
-            const questions = JSON.parse(cleanJson).questions;
+            const questions = data.candidates[0].content.parts[0].text
+                .split('\n')
+                .map(line => line.trim())
+                .filter(line => line && !line.startsWith('```'));
 
-            questionsOutput.innerHTML = questions.map(q => `
-                <div class="question-item">
-                    <h4>${q.type}</h4>
-                    <p><strong>Question:</strong> ${q.question}</p>
-                    <p><strong>Answer:</strong> ${q.answer}</p>
-                </div>
-            `).join('');
+            questionsOutput.innerHTML = '';
+            questions.forEach(question => {
+                const card = createQuestionCard(question);
+                questionsOutput.appendChild(card);
+            });
 
         } catch (error) {
             console.error("Error generating questions:", error);
-            questionsOutput.innerHTML = `<div class="error">Error generating questions: ${error.message}</div>`;
+            questionsOutput.innerHTML = `<div class="error">Failed to generate questions: ${error.message}</div>`;
         } finally {
             generateQuestionsButton.disabled = false;
             generateQuestionsButton.textContent = "Generate Questions";
@@ -322,6 +449,22 @@ addOnUISdk.ready.then(async () => {
 
     // Add event listener for the generate questions button
     generateQuestionsButton.addEventListener("click", generateQuestions);
+
+    // Add event listeners for drag and drop events
+    addOnUISdk.app.on("dragstart", (eventData) => {
+        console.log("Drag started for question card");
+    });
+
+    addOnUISdk.app.on("dragend", (eventData) => {
+        if (!eventData.dropCancelled) {
+            console.log("Question card dropped successfully");
+        } else {
+            console.log("Drop cancelled:", eventData.dropCancelReason);
+        }
+    });
+
+    // Remove the canvas drop event listeners since we're using the SDK now
+    document.removeEventListener('DOMContentLoaded', () => {});
 
     script.onload = () => {
         calculator = Desmos.GraphingCalculator(graphContainer, {

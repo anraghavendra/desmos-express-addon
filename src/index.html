@@ -250,22 +250,80 @@
             min-height: 100px;
         }
 
-        .question-item {
-            margin-bottom: 10px;
-            padding: 10px;
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+        .question-card {
+            background-color: #ffffff;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            cursor: grab;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 15px;
+            line-height: 1.5;
+            color: #2c3e50;
+            min-height: 70px;
+            width: 100%;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            position: relative;
+            overflow: hidden;
         }
 
-        .question-item h4 {
-            margin: 0 0 5px 0;
+        .question-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #3498db, #2ecc71);
+            opacity: 0.8;
+        }
+
+        .question-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            border-color: #3498db;
+        }
+
+        .question-card.dragging {
+            opacity: 0.8;
+            cursor: grabbing;
+            transform: scale(1.02);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .question-text {
+            font-size: 14px;
             color: #333;
+            line-height: 1.4;
+            margin-bottom: 8px;
         }
 
-        .question-item p {
-            margin: 0;
-            color: #666;
+        .question-card img {
+            border: 1px solid #eee;
+            border-radius: 4px;
+            transition: transform 0.2s ease;
+        }
+
+        .question-card img:hover {
+            transform: scale(1.02);
+        }
+
+        .dcg-graph-container {
+            position: relative;
+        }
+
+        .dcg-graph-container.drag-over {
+            outline: 2px dashed #5258e4;
+            outline-offset: -2px;
         }
     </style>
 </head>
