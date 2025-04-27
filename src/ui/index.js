@@ -285,12 +285,33 @@ y = 0.5x^2 - 2x - 1`
             copyBtn.textContent = 'Copy';  // Reset copy button text
         };
         
-        copyBtn.onclick = () => {
-            const isAnswerShown = answerText.style.display !== 'none';
-            const textToCopy = isAnswerShown ? answer : question;
-            navigator.clipboard.writeText(textToCopy);
-            copyBtn.textContent = isAnswerShown ? 'Answer Copied!' : 'Question Copied!';
-            setTimeout(() => copyBtn.textContent = 'Copy', 1000);
+        copyBtn.onclick = async () => {
+            try {
+                const isAnswerShown = answerText.style.display !== 'none';
+                const textToCopy = isAnswerShown ? answer : question;
+                
+                // Create a temporary textarea element
+                const textarea = document.createElement('textarea');
+                textarea.value = textToCopy;
+                textarea.style.position = 'fixed';  // Prevent scrolling to bottom
+                textarea.style.opacity = '0';
+                document.body.appendChild(textarea);
+                textarea.select();
+                
+                // Execute copy command
+                document.execCommand('copy');
+                
+                // Remove temporary element
+                document.body.removeChild(textarea);
+                
+                // Update button text
+                copyBtn.textContent = isAnswerShown ? 'Answer Copied!' : 'Question Copied!';
+                setTimeout(() => copyBtn.textContent = 'Copy', 1000);
+            } catch (error) {
+                console.error('Failed to copy text:', error);
+                copyBtn.textContent = 'Copy Failed';
+                setTimeout(() => copyBtn.textContent = 'Copy', 1000);
+            }
         };
         
         cardActions.appendChild(showAnswerBtn);
