@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta
+            name="description"
+            content="Convert mathematical equations into beautiful graphs using Desmos"
+        />
+        <meta name="keywords" content="Adobe, Express, Add-On, Desmos, Math, Graphs" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Desmos Graph Maker</title>
+        <style>
+            .container {
+                margin: 24px;
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .input-container {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            input {
+                padding: 8px;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                font-size: 14px;
+            }
+
+            button {
+                background-color: rgb(82, 88, 228);
+                border-color: rgb(82, 88, 228);
+                border-radius: 16px;
+                border-style: solid;
+                color: rgb(255, 255, 255);
+                font-family: sans-serif;
+                height: 32px;
+                padding: 0 16px;
+            }
+
+            button:disabled {
+                background-color: rgb(177, 177, 177);
+                border-color: rgb(177, 177, 177);
+            }
+
+            button:not([disabled]):hover {
+                background-color: rgb(64, 70, 202);
+                cursor: pointer;
+            }
+
+            #graph-container {
+                width: 100%;
+                height: 300px;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                margin-top: 16px;
+            }
+
+            .examples {
+                font-size: 12px;
+                color: #666;
+                margin-top: 8px;
+            }
+
+            .button-container {
+                display: flex;
+                gap: 8px;
+            }
+
+            .camera-button {
+                background-color: rgb(82, 88, 228);
+                border-color: rgb(82, 88, 228);
+                border-radius: 16px;
+                border-style: solid;
+                color: rgb(255, 255, 255);
+                font-family: sans-serif;
+                height: 32px;
+                padding: 0 16px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-top: 8px;
+            }
+
+            .camera-icon {
+                width: 16px;
+                height: 16px;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- 
+            Please note that this document does not use the spectrum web components theme for Express.
+            You may use "addOnUISdk.app.ui.theme" to get the current theme and style accordingly.
+        -->
+        <div class="container">
+            <div class="input-container">
+                <label for="equation">Enter your equation:</label>
+                <input type="text" id="equation" placeholder="e.g., y = x^2" />
+                <div class="examples">
+                    Examples: y = sin(x), x^2 + y^2 = 1, y = 2x + 3
+                </div>
+            </div>
+            <div class="button-container">
+                <button id="createGraph" disabled>Create Graph</button>
+            </div>
+            <div id="graph-container"></div>
+            <button id="captureGraph" class="camera-button" disabled>
+                <svg class="camera-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 16C13.6569 16 15 14.6569 15 13C15 11.3431 13.6569 10 12 10C10.3431 10 9 11.3431 9 13C9 14.6569 10.3431 16 12 16Z" fill="currentColor"/>
+                    <path d="M19 4H5C3.89543 4 3 4.89543 3 6V18C3 19.1046 3.89543 20 5 20H19C20.1046 20 21 19.1046 21 18V6C21 4.89543 20.1046 4 19 4ZM12 18C9.23858 18 7 15.7614 7 13C7 10.2386 9.23858 8 12 8C14.7614 8 17 10.2386 17 13C17 15.7614 14.7614 18 12 18Z" fill="currentColor"/>
+                </svg>
+                Capture Graph
+            </button>
+        </div>
+
+        <script type="module" src="ui/index.js"></script>
+    </body>
+</html>
