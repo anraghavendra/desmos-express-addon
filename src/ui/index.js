@@ -243,143 +243,51 @@ addOnUISdk.ready.then(async () => {
     }
 
     // Function to create a question card
-    function createQuestionCard(question) {
+    function createQuestionCard(question, answer) {
         const card = document.createElement('div');
         card.className = 'question-card';
-        card.textContent = question;
         
-        // Enable drag to document for the entire card
-        addOnUISdk.app.enableDragToDocument(card, {
-            previewCallback: (element) => {
-                // Create a temporary canvas for preview
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                
-                // Get the card's dimensions and add padding
-                const rect = element.getBoundingClientRect();
-                const padding = 20; // Extra padding to prevent cutoff
-                canvas.width = rect.width + (padding * 2);
-                canvas.height = rect.height + (padding * 2);
-                
-                // Get computed styles
-                const styles = window.getComputedStyle(element);
-                
-                // Draw the card background
-                ctx.fillStyle = styles.backgroundColor;
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                
-                // Draw the border
-                ctx.strokeStyle = styles.borderColor;
-                ctx.lineWidth = parseInt(styles.borderWidth);
-                ctx.strokeRect(padding, padding, rect.width, rect.height);
-                
-                // Draw the text
-                ctx.font = styles.font;
-                ctx.fillStyle = styles.color;
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                
-                // Word wrap the text
-                const words = question.split(' ');
-                const maxWidth = rect.width - 32; // Padding
-                let lines = [];
-                let currentLine = '';
-                
-                words.forEach(word => {
-                    const testLine = currentLine + word + ' ';
-                    const metrics = ctx.measureText(testLine);
-                    if (metrics.width > maxWidth) {
-                        lines.push(currentLine);
-                        currentLine = word + ' ';
-                    } else {
-                        currentLine = testLine;
-                    }
-                });
-                lines.push(currentLine);
-                
-                // Draw each line
-                const lineHeight = parseInt(styles.lineHeight);
-                const startY = padding + (rect.height - (lines.length * lineHeight)) / 2;
-                
-                lines.forEach((line, i) => {
-                    ctx.fillText(line.trim(), padding + (rect.width / 2), startY + (i * lineHeight));
-                });
-                
-                return new URL(canvas.toDataURL('image/png'));
-            },
-            completionCallback: async (element) => {
-                // Create the final image
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                
-                // Get the card's dimensions and add padding
-                const rect = element.getBoundingClientRect();
-                const padding = 20; // Extra padding to prevent cutoff
-                canvas.width = rect.width + (padding * 2);
-                canvas.height = rect.height + (padding * 2);
-                
-                // Get computed styles
-                const styles = window.getComputedStyle(element);
-                
-                // Draw the card background
-                ctx.fillStyle = styles.backgroundColor;
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                
-                // Draw the border
-                ctx.strokeStyle = styles.borderColor;
-                ctx.lineWidth = parseInt(styles.borderWidth);
-                ctx.strokeRect(padding, padding, rect.width, rect.height);
-                
-                // Draw the text
-                ctx.font = styles.font;
-                ctx.fillStyle = styles.color;
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                
-                // Word wrap the text
-                const words = question.split(' ');
-                const maxWidth = rect.width - 32; // Padding
-                let lines = [];
-                let currentLine = '';
-                
-                words.forEach(word => {
-                    const testLine = currentLine + word + ' ';
-                    const metrics = ctx.measureText(testLine);
-                    if (metrics.width > maxWidth) {
-                        lines.push(currentLine);
-                        currentLine = word + ' ';
-                    } else {
-                        currentLine = testLine;
-                    }
-                });
-                lines.push(currentLine);
-                
-                // Draw each line
-                const lineHeight = parseInt(styles.lineHeight);
-                const startY = padding + (rect.height - (lines.length * lineHeight)) / 2;
-                
-                lines.forEach((line, i) => {
-                    ctx.fillText(line.trim(), padding + (rect.width / 2), startY + (i * lineHeight));
-                });
-                
-                // Convert to blob
-                const blob = await new Promise(resolve => {
-                    canvas.toBlob(resolve, 'image/png');
-                });
-                
-                return [{ blob }];
+        const questionText = document.createElement('div');
+        questionText.className = 'question-text';
+        questionText.textContent = question;
+        
+        const cardActions = document.createElement('div');
+        cardActions.className = 'card-actions';
+        
+        const showAnswerBtn = document.createElement('button');
+        showAnswerBtn.className = 'card-button show-answer';
+        showAnswerBtn.textContent = 'Show Answer';
+        showAnswerBtn.onclick = () => {
+            if (answerText.style.display === 'none') {
+                answerText.style.display = 'block';
+                showAnswerBtn.textContent = 'Hide Answer';
+            } else {
+                answerText.style.display = 'none';
+                showAnswerBtn.textContent = 'Show Answer';
             }
-        });
-
-        // Add drag event listeners for visual feedback
-        card.addEventListener('dragstart', () => {
-            card.classList.add('dragging');
-        });
+        };
         
-        card.addEventListener('dragend', () => {
-            card.classList.remove('dragging');
-        });
-
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'card-button copy';
+        copyBtn.textContent = 'Copy';
+        copyBtn.onclick = () => {
+            navigator.clipboard.writeText(`Question: ${question}\nAnswer: ${answer}`);
+            copyBtn.textContent = 'Copied!';
+            setTimeout(() => copyBtn.textContent = 'Copy', 1000);
+        };
+        
+        const answerText = document.createElement('div');
+        answerText.className = 'answer-text';
+        answerText.textContent = answer;
+        answerText.style.display = 'none';
+        
+        cardActions.appendChild(showAnswerBtn);
+        cardActions.appendChild(copyBtn);
+        
+        card.appendChild(questionText);
+        card.appendChild(answerText);
+        card.appendChild(cardActions);
+        
         return card;
     }
 
@@ -403,9 +311,10 @@ addOnUISdk.ready.then(async () => {
                 throw new Error("Please select at least one question type");
             }
 
-            const prompt = `Generate ${selectedTypes.length} ${difficultySelect.value} difficulty math questions based on these equations: ${equations.join(', ')}. 
+            const prompt = `Generate ${selectedTypes.length} ${difficultySelect.value} difficulty math questions and their answers based on these equations: ${equations.join(', ')}. 
                 Question types: ${selectedTypes.join(', ')}. 
-                Return each question on a new line.`;
+                Return each question and answer in the format: "Question: [question] | Answer: [answer]"
+                Put each question-answer pair on a new line.`;
 
             const response = await fetch(`${config.api.gemini.endpoint}?key=${config.api.gemini.key}`, {
                 method: "POST",
@@ -427,16 +336,28 @@ addOnUISdk.ready.then(async () => {
                 throw new Error(data.error?.message || "Failed to generate questions");
             }
 
-            const questions = data.candidates[0].content.parts[0].text
-                .split('\n')
+            const text = data.candidates[0].content.parts[0].text;
+            const pairs = text.split('\n')
                 .map(line => line.trim())
-                .filter(line => line && !line.startsWith('```'));
-
+                .filter(line => line)
+                .map(line => {
+                    const [questionPart, answerPart] = line.split('|');
+                    return {
+                        question: questionPart.replace('Question:', '').trim(),
+                        answer: answerPart.replace('Answer:', '').trim()
+                    };
+                });
+            
             questionsOutput.innerHTML = '';
-            questions.forEach(question => {
-                const card = createQuestionCard(question);
-                questionsOutput.appendChild(card);
+            const container = document.createElement('div');
+            container.className = 'questions-container';
+            
+            pairs.forEach(({ question, answer }) => {
+                const card = createQuestionCard(question, answer);
+                container.appendChild(card);
             });
+            
+            questionsOutput.appendChild(container);
 
         } catch (error) {
             console.error("Error generating questions:", error);
@@ -547,4 +468,43 @@ addOnUISdk.ready.then(async () => {
 
         createGraphButton.disabled = true;
     };
+
+    // Update the generate questions section with new classes
+    const generateQuestionsSection = document.querySelector('.generate-questions-section');
+    generateQuestionsSection.className = 'generate-questions-section';
+    
+    const questionTypeContainer = document.querySelector('.question-type-container');
+    questionTypeContainer.className = 'question-type-container';
+    
+    // Update checkboxes
+    const checkboxes = questionTypeContainer.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+        const container = checkbox.parentElement;
+        container.className = 'question-type-checkbox';
+    });
+    
+    // Update generate button
+    const generateButton = document.querySelector('.generate-questions-button');
+    generateButton.className = 'generate-questions-button';
 });
+
+async function createTextbox() {
+    try {
+        const editor = await window.AddOnSdk.app.editor;
+        if (!editor) {
+            console.error("Editor is not available");
+            return;
+        }
+        
+        const textbox = await editor.createText({
+            text: "Enter text here",
+            fontSize: 24,
+            color: { red: 0, green: 0, blue: 0 },
+            position: { x: 100, y: 100 }
+        });
+        
+        console.log("Textbox created successfully");
+    } catch (error) {
+        console.error("Error creating textbox:", error);
+    }
+}

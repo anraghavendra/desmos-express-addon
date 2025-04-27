@@ -14,9 +14,10 @@
             display: flex;
             flex-direction: column;
             gap: 12px;
-            max-width: calc(100% - 16px);
-            overflow-x: hidden;
+            max-width: 100%;
             box-sizing: border-box;
+            overflow-x: hidden;
+            padding-left: 16px;
         }
 
         .input-container {
@@ -211,9 +212,11 @@
 
         .question-container {
             margin-top: 20px;
-            padding: 15px;
+            padding: 15px 0;
             background-color: #f5f5f5;
             border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .question-types {
@@ -243,68 +246,153 @@
         }
 
         .questions-output {
-            margin-top: 15px;
-            padding: 10px;
+            margin: 15px 0;
+            padding: 10px 0;
             background-color: white;
             border-radius: 4px;
-            min-height: 100px;
+            width: 100%;
+            box-sizing: border-box;
+            overflow-x: hidden;
+        }
+
+        .questions-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            padding: 0;
+            width: 100%;
+            box-sizing: border-box;
+            margin: 0;
+        }
+
+        .flip-card {
+            background-color: transparent;
+            perspective: 1000px;
+            height: 200px;
+            width: 100%;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: left;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            padding: 20px;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .flip-card-back {
+            transform: rotateY(180deg);
+            background-color: #f8fafc;
+        }
+
+        .card-content {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 8px;
+            font-size: 15px;
+            line-height: 1.5;
+            color: #1e293b;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .card-button {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+
+        .card-button.show-answer {
+            background-color: #4299e1;
+            color: white;
+        }
+
+        .card-button.show-answer:hover {
+            background-color: #3182ce;
+        }
+
+        .card-button.copy {
+            background-color: #f7fafc;
+            border-color: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .card-button.copy:hover {
+            background-color: #edf2f7;
+            border-color: #cbd5e0;
+        }
+
+        .card-label {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 12px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
         .question-card {
             background-color: #ffffff;
-            border: 2px solid #e0e0e0;
+            border: 1px solid #e2e8f0;
             border-radius: 12px;
             padding: 20px;
             margin-bottom: 16px;
-            cursor: grab;
-            transition: all 0.3s ease;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            font-family: 'Segoe UI', Arial, sans-serif;
-            font-size: 15px;
-            line-height: 1.5;
-            color: #2c3e50;
-            min-height: 70px;
+            transition: all 0.3s ease;
             width: 100%;
             box-sizing: border-box;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            white-space: pre-wrap;
+            overflow-wrap: break-word;
             word-wrap: break-word;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .question-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #3498db, #2ecc71);
-            opacity: 0.8;
+            hyphens: auto;
         }
 
         .question-card:hover {
-            transform: translateY(-3px);
+            transform: translateY(-2px);
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-            border-color: #3498db;
-        }
-
-        .question-card.dragging {
-            opacity: 0.8;
-            cursor: grabbing;
-            transform: scale(1.02);
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
         }
 
         .question-text {
-            font-size: 14px;
-            color: #333;
-            line-height: 1.4;
-            margin-bottom: 8px;
+            font-size: 16px;
+            color: #1a202c;
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+
+        .answer-text {
+            font-size: 15px;
+            color: #4a5568;
+            margin: 12px 0;
+            padding: 12px;
+            background-color: #f7fafc;
+            border-radius: 8px;
+            border-left: 4px solid #4299e1;
         }
 
         .question-card img {
@@ -334,51 +422,6 @@
             You may use "addOnUISdk.app.ui.theme" to get the current theme and style accordingly.
         -->
     <div class="container">
-        <div class="prompt-container">
-            <textarea id="gemini-prompt"
-                placeholder="Ask Gemini to create graph art (e.g., 'Create a heart shape using parametric equations')"></textarea>
-            <div class="examples">
-                Try prompts like:
-                <ul>
-                    <li>"Create a heart shape"</li>
-                    <li>"Draw a flower with 5 petals"</li>
-                    <li>"Make a butterfly shape"</li>
-                    <li>"Create a spiral pattern"</li>
-                    <li>"Draw a star with 6 points"</li>
-                </ul>
-            </div>
-            <div id="error-message" style="color: #c00; font-size: 13px; min-height: 18px; margin-top: 4px;"></div>
-            <button id="generate-graph">Generate Graph</button>
-        </div>
-
-        <div class="question-container">
-            <h3>Generate Math Questions</h3>
-            <div class="question-types">
-                <label>
-                    <input type="checkbox" id="type-derivative" checked> Derivatives
-                </label>
-                <label>
-                    <input type="checkbox" id="type-integral" checked> Integrals
-                </label>
-                <label>
-                    <input type="checkbox" id="type-intercepts" checked> Intercepts
-                </label>
-                <label>
-                    <input type="checkbox" id="type-area" checked> Area
-                </label>
-            </div>
-            <div class="difficulty-level">
-                <label>Difficulty:</label>
-                <select id="difficulty">
-                    <option value="easy">Easy</option>
-                    <option value="medium" selected>Medium</option>
-                    <option value="hard">Hard</option>
-                </select>
-            </div>
-            <button id="generate-questions">Generate Questions</button>
-            <div id="questions-output" class="questions-output"></div>
-        </div>
-
         <div id="equations-container">
             <div class="equation-container" data-index="0">
                 <div class="input-container">
@@ -423,6 +466,51 @@
                     <input type="number" id="yStep" value="1" step="0.1">
                 </div>
             </div>
+        </div>
+
+        <div class="prompt-container">
+            <textarea id="gemini-prompt"
+                placeholder="Ask Gemini to create graph art (e.g., 'Create a heart shape using parametric equations')"></textarea>
+            <div class="examples">
+                Try prompts like:
+                <ul>
+                    <li>"Create a heart shape"</li>
+                    <li>"Draw a flower with 5 petals"</li>
+                    <li>"Make a butterfly shape"</li>
+                    <li>"Create a spiral pattern"</li>
+                    <li>"Draw a star with 6 points"</li>
+                </ul>
+            </div>
+            <div id="error-message" style="color: #c00; font-size: 13px; min-height: 18px; margin-top: 4px;"></div>
+            <button id="generate-graph">Generate Graph</button>
+        </div>
+
+        <div class="question-container">
+            <h3>Generate Math Questions</h3>
+            <div class="question-types">
+                <label>
+                    <input type="checkbox" id="type-derivative" checked> Derivatives
+                </label>
+                <label>
+                    <input type="checkbox" id="type-integral" checked> Integrals
+                </label>
+                <label>
+                    <input type="checkbox" id="type-intercepts" checked> Intercepts
+                </label>
+                <label>
+                    <input type="checkbox" id="type-area" checked> Area
+                </label>
+            </div>
+            <div class="difficulty-level">
+                <label>Difficulty:</label>
+                <select id="difficulty">
+                    <option value="easy">Easy</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="hard">Hard</option>
+                </select>
+            </div>
+            <button id="generate-questions">Generate Questions</button>
+            <div id="questions-output" class="questions-output"></div>
         </div>
     </div>
 
