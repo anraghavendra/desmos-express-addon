@@ -12,6 +12,15 @@ addOnUISdk.ready.then(async () => {
     const graphContainer = document.getElementById("graph-container");
     const geminiPrompt = document.getElementById("gemini-prompt");
     const generateGraphButton = document.getElementById("generate-graph");
+    const generateQuestionsButton = document.getElementById("generate-questions");
+    const questionsOutput = document.getElementById("questions-output");
+    const difficultySelect = document.getElementById("difficulty");
+    const questionTypeCheckboxes = {
+        derivative: document.getElementById("type-derivative"),
+        integral: document.getElementById("type-integral"),
+        intercepts: document.getElementById("type-intercepts"),
+        area: document.getElementById("type-area")
+    };
 
     // Function to handle Gemini prompt
     async function handleGeminiPrompt() {
@@ -220,6 +229,99 @@ addOnUISdk.ready.then(async () => {
 
         createGraphButton.disabled = !hasValidEquation;
     }
+
+    // Function to get current graph equations
+    function getCurrentGraphEquations() {
+        const equations = [];
+        document.querySelectorAll('.equation-container').forEach(container => {
+            const input = container.querySelector('input');
+            if (input && input.value.trim()) {
+                equations.push(input.value.trim());
+            }
+        });
+        return equations;
+    }
+
+    // Function to generate questions based on the current graph
+    async function generateQuestions() {
+        const equations = getCurrentGraphEquations();
+        if (equations.length === 0) {
+            questionsOutput.innerHTML = '<div class="error">Please create a graph first before generating questions.</div>';
+            return;
+        }
+
+        const selectedTypes = Object.entries(questionTypeCheckboxes)
+            .filter(([_, checkbox]) => checkbox.checked)
+            .map(([type, _]) => type);
+
+        if (selectedTypes.length === 0) {
+            questionsOutput.innerHTML = '<div class="error">Please select at least one question type.</div>';
+            return;
+        }
+
+        const difficulty = difficultySelect.value;
+        generateQuestionsButton.disabled = true;
+        generateQuestionsButton.textContent = "Generating...";
+        questionsOutput.innerHTML = '<div class="loading">Generating questions...</div>';
+
+        try {
+            const prompt = `Generate ${difficulty} difficulty math questions based on these equations: ${equations.join(', ')}. 
+            Include questions about: ${selectedTypes.join(', ')}. 
+            Format each question with a clear question text and answer. 
+            Return ONLY a valid JSON object with this exact structure (no markdown formatting, no additional text):
+            {
+                "questions": [
+                    {
+                        "type": "question type",
+                        "question": "question text",
+                        "answer": "answer text"
+                    }
+                ]
+            }`;
+
+            const response = await fetch(`${config.api.gemini.endpoint}?key=${config.api.gemini.key}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [{
+                            text: prompt
+                        }]
+                    }]
+                })
+            });
+
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.error?.message || "Failed to generate questions");
+            }
+
+            const questionsText = data.candidates[0].content.parts[0].text;
+            // Remove markdown formatting if present
+            const cleanJson = questionsText.replace(/```json\n?|\n?```/g, '').trim();
+            const questions = JSON.parse(cleanJson).questions;
+
+            questionsOutput.innerHTML = questions.map(q => `
+                <div class="question-item">
+                    <h4>${q.type}</h4>
+                    <p><strong>Question:</strong> ${q.question}</p>
+                    <p><strong>Answer:</strong> ${q.answer}</p>
+                </div>
+            `).join('');
+
+        } catch (error) {
+            console.error("Error generating questions:", error);
+            questionsOutput.innerHTML = `<div class="error">Error generating questions: ${error.message}</div>`;
+        } finally {
+            generateQuestionsButton.disabled = false;
+            generateQuestionsButton.textContent = "Generate Questions";
+        }
+    }
+
+    // Add event listener for the generate questions button
+    generateQuestionsButton.addEventListener("click", generateQuestions);
 
     script.onload = () => {
         calculator = Desmos.GraphingCalculator(graphContainer, {
