@@ -1,4 +1,5 @@
 import addOnUISdk from "https://new.express.adobe.com/static/add-on-sdk/sdk.js";
+import config from '../config.js';
 
 addOnUISdk.ready.then(async () => {
     console.log("addOnUISdk is ready for use.");
@@ -26,7 +27,7 @@ addOnUISdk.ready.then(async () => {
             generateGraphButton.textContent = "Generating...";
 
             // Use the correct Gemini v1 endpoint with the new Gemini 2.0 Flash model
-            const response = await fetch("https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=AIzaSyDyYgfRTQP2pSl2hkJyXjjUfstdWJE6k2E", {
+            const response = await fetch(`${config.api.gemini.endpoint}?key=${config.api.gemini.key}`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -78,7 +79,7 @@ addOnUISdk.ready.then(async () => {
     generateGraphButton.addEventListener("click", handleGeminiPrompt);
 
     const script = document.createElement("script");
-    script.src = "https://www.desmos.com/api/v1.7/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6";
+    script.src = `https://www.desmos.com/api/v1.7/calculator.js?apiKey=${config.api.desmos.key}`;
     script.async = true;
     document.head.appendChild(script);
 

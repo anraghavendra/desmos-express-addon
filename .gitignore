@@ -8,6 +8,11 @@ dist/
 # Environment files
 .env
 .env.local
+.env.*
+
+# Configuration
+src/config.js
+!src/config.template.js
 
 # IDE files
 .vscode/
