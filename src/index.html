@@ -104,17 +104,29 @@
             display: flex;
             flex-direction: column;
             gap: 8px;
-            margin-bottom: 16px;
+            margin-bottom: 24px;
+            padding: 16px;
+            background-color: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
         }
 
         .prompt-container textarea {
             width: 100%;
             min-height: 80px;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
             font-size: 14px;
+            line-height: 1.5;
             resize: vertical;
+            background-color: white;
+        }
+
+        .prompt-container textarea:focus {
+            outline: none;
+            border-color: #4299e1;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
         }
 
         .prompt-container button {
@@ -413,6 +425,84 @@
             outline: 2px dashed #5258e4;
             outline-offset: -2px;
         }
+
+        .question-prompt {
+            margin: 16px 0;
+        }
+
+        .question-prompt textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.5;
+            resize: vertical;
+            margin-bottom: 12px;
+        }
+
+        .question-prompt textarea:focus {
+            outline: none;
+            border-color: #4299e1;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+        }
+
+        .question-prompt .examples {
+            font-size: 13px;
+            color: #64748b;
+            margin-top: 8px;
+        }
+
+        .question-prompt .examples ul {
+            margin: 8px 0;
+            padding-left: 20px;
+        }
+
+        .question-prompt .examples li {
+            margin: 4px 0;
+            color: #4a5568;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+            align-items: center;
+        }
+
+        .input-row input[type="text"] {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .input-row input[type="text"]:focus {
+            outline: none;
+            border-color: #4299e1;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+        }
+
+        .input-row select {
+            padding: 8px 24px 8px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 14px;
+            background-color: white;
+            cursor: pointer;
+        }
+
+        .input-row select:focus {
+            outline: none;
+            border-color: #4299e1;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+        }
+
+        #equations-container {
+            margin-top: 8px;
+        }
     </style>
 </head>
 
@@ -422,6 +512,23 @@
             You may use "addOnUISdk.app.ui.theme" to get the current theme and style accordingly.
         -->
     <div class="container">
+        <div class="prompt-container">
+            <textarea id="gemini-prompt"
+                placeholder="Ask for mathematical equations (e.g., 'generate 3 equations for parabolas', 'show me different types of linear functions')"></textarea>
+            <div class="examples">
+                Try prompts like:
+                <ul>
+                    <li>"Generate 4 exponential growth functions"</li>
+                    <li>"Show me different types of cubic functions"</li>
+                    <li>"Create equations for circles with different centers and radii"</li>
+                    <li>"Give me examples of rational functions"</li>
+                    <li>"Generate trigonometric functions with different periods"</li>
+                </ul>
+            </div>
+            <div id="error-message" style="color: #c00; font-size: 13px; min-height: 18px; margin-top: 4px;"></div>
+            <button id="generate-graph">Generate Functions</button>
+        </div>
+
         <div id="equations-container">
             <div class="equation-container" data-index="0">
                 <div class="input-container">
@@ -468,41 +575,11 @@
             </div>
         </div>
 
-        <div class="prompt-container">
-            <textarea id="gemini-prompt"
-                placeholder="Ask Gemini to create graph art (e.g., 'Create a heart shape using parametric equations')"></textarea>
-            <div class="examples">
-                Try prompts like:
-                <ul>
-                    <li>"Create a heart shape"</li>
-                    <li>"Draw a flower with 5 petals"</li>
-                    <li>"Make a butterfly shape"</li>
-                    <li>"Create a spiral pattern"</li>
-                    <li>"Draw a star with 6 points"</li>
-                </ul>
-            </div>
-            <div id="error-message" style="color: #c00; font-size: 13px; min-height: 18px; margin-top: 4px;"></div>
-            <button id="generate-graph">Generate Graph</button>
-        </div>
-
         <div class="question-container">
             <h3>Generate Math Questions</h3>
-            <div class="question-types">
-                <label>
-                    <input type="checkbox" id="type-derivative" checked> Derivatives
-                </label>
-                <label>
-                    <input type="checkbox" id="type-integral" checked> Integrals
-                </label>
-                <label>
-                    <input type="checkbox" id="type-intercepts" checked> Intercepts
-                </label>
-                <label>
-                    <input type="checkbox" id="type-area" checked> Area
-                </label>
-            </div>
-            <div class="difficulty-level">
-                <label>Difficulty:</label>
+            <div class="input-row">
+                <input type="text" id="question-type" 
+                    placeholder="Enter topic (e.g., derivatives, integrals, intercepts)" />
                 <select id="difficulty">
                     <option value="easy">Easy</option>
                     <option value="medium" selected>Medium</option>

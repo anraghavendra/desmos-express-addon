@@ -35,7 +35,6 @@ addOnUISdk.ready.then(async () => {
             generateGraphButton.disabled = true;
             generateGraphButton.textContent = "Generating...";
 
-            // Use the correct Gemini v1 endpoint with the new Gemini 2.0 Flash model
             const response = await fetch(`${config.api.gemini.endpoint}?key=${config.api.gemini.key}`, {
                 method: "POST",
                 headers: {
@@ -44,7 +43,19 @@ addOnUISdk.ready.then(async () => {
                 body: JSON.stringify({
                     contents: [{
                         parts: [{
-                            text: `You are a math expert. Convert this request into Desmos equations: "${prompt}". \nReturn ONLY the equations in a format that can be directly used in Desmos, one per line.\nFor example, if the request is \"create a heart shape\", you might return:\nx^2 + (y - sqrt(abs(x)))^2 = 1\nx^2 + (y + sqrt(abs(x)))^2 = 1`
+                            text: `You are a math teacher who specializes in creating educational examples. Generate mathematical equations based on this request: "${prompt}".
+                            
+Requirements:
+1. Return ONLY the equations in a format that can be directly used in Desmos, one per line
+2. Each equation should demonstrate a different variation or concept within the requested topic
+3. Make equations that are clear and educational, suitable for teaching
+4. Use standard form unless specifically requested otherwise
+5. Include a good range of complexity levels
+
+For example, if asked for "generate 3 equations for parabolas", you might return:
+y = x^2
+y = -2(x - 3)^2 + 4
+y = 0.5x^2 - 2x - 1`
                         }]
                     }]
                 })
@@ -303,18 +314,19 @@ addOnUISdk.ready.then(async () => {
             generateQuestionsButton.disabled = true;
             generateQuestionsButton.textContent = "Generating...";
 
-            const selectedTypes = Object.entries(questionTypeCheckboxes)
-                .filter(([_, checkbox]) => checkbox.checked)
-                .map(([type, _]) => type);
-
-            if (selectedTypes.length === 0) {
-                throw new Error("Please select at least one question type");
+            const questionType = document.getElementById('question-type').value.trim();
+            if (!questionType) {
+                throw new Error("Please enter a question topic");
             }
 
-            const prompt = `Generate ${selectedTypes.length} ${difficultySelect.value} difficulty math questions and their answers based on these equations: ${equations.join(', ')}. 
-                Question types: ${selectedTypes.join(', ')}. 
-                Return each question and answer in the format: "Question: [question] | Answer: [answer]"
-                Put each question-answer pair on a new line.`;
+            const prompt = `Using these equations: ${equations.join(', ')}, generate ${difficultySelect.value} difficulty math questions about ${questionType}.
+                Focus specifically on how ${questionType} relates to these exact equations.
+                
+                IMPORTANT: Format your response EXACTLY as follows, with each question-answer pair separated by | and each pair on a new line:
+                Question: What is the derivative of y = x^2? | Answer: The derivative is dy/dx = 2x
+                Question: What is the integral of y = 2x? | Answer: The integral is y = x^2 + C
+                
+                Generate 3-4 questions with step-by-step solutions in the answers.`;
 
             const response = await fetch(`${config.api.gemini.endpoint}?key=${config.api.gemini.key}`, {
                 method: "POST",
@@ -339,14 +351,29 @@ addOnUISdk.ready.then(async () => {
             const text = data.candidates[0].content.parts[0].text;
             const pairs = text.split('\n')
                 .map(line => line.trim())
-                .filter(line => line)
+                .filter(line => line && line.includes('Question:'))
                 .map(line => {
-                    const [questionPart, answerPart] = line.split('|');
+                    const parts = line.split('|');
+                    if (parts.length < 2) {
+                        // If no | separator, try to split by "Answer:"
+                        const fullText = parts[0];
+                        const questionMatch = fullText.match(/Question:(.*?)(?=Answer:)/i);
+                        const answerMatch = fullText.match(/Answer:(.*)/i);
+                        
+                        return {
+                            question: questionMatch ? questionMatch[1].trim() : fullText,
+                            answer: answerMatch ? answerMatch[1].trim() : "No answer provided"
+                        };
+                    }
                     return {
-                        question: questionPart.replace('Question:', '').trim(),
-                        answer: answerPart.replace('Answer:', '').trim()
+                        question: parts[0].replace('Question:', '').trim(),
+                        answer: parts[1].replace('Answer:', '').trim()
                     };
                 });
+            
+            if (pairs.length === 0) {
+                throw new Error("No valid questions generated. Please try again.");
+            }
             
             questionsOutput.innerHTML = '';
             const container = document.createElement('div');
