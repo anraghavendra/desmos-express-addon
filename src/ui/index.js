@@ -5,7 +5,8 @@ addOnUISdk.ready.then(async () => {
 
     const { runtime } = addOnUISdk.instance;
 
-    const equationInput = document.getElementById("equation");
+    const equationsContainer = document.getElementById("equations-container");
+    const addEquationButton = document.getElementById("addEquation");
     const createGraphButton = document.getElementById("createGraph");
     const graphContainer = document.getElementById("graph-container");
 
@@ -15,6 +16,7 @@ addOnUISdk.ready.then(async () => {
     document.head.appendChild(script);
 
     let calculator;
+    let equationCount = 1;
 
     // Function to convert data URL to Blob
     function dataURLtoBlob(dataURL) {
@@ -45,6 +47,74 @@ addOnUISdk.ready.then(async () => {
             .replace(/\bpi\b/g, '\\pi');
     }
 
+    // Function to create a new equation input
+    function createEquationInput(index) {
+        const equationContainer = document.createElement('div');
+        equationContainer.className = 'equation-container';
+        equationContainer.setAttribute('data-index', index);
+
+        const inputContainer = document.createElement('div');
+        inputContainer.className = 'input-container';
+
+        const inputWrapper = document.createElement('div');
+        inputWrapper.style.display = 'flex';
+        inputWrapper.style.gap = '8px';
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.id = `equation-${index}`;
+        input.placeholder = 'e.g., y = x^2';
+
+        const removeButton = document.createElement('button');
+        removeButton.className = 'remove-equation-button';
+        removeButton.textContent = '×';
+        removeButton.onclick = () => removeEquation(index);
+
+        inputWrapper.appendChild(input);
+        inputWrapper.appendChild(removeButton);
+        inputContainer.appendChild(inputWrapper);
+        equationContainer.appendChild(inputContainer);
+
+        return equationContainer;
+    }
+
+    // Function to remove an equation input
+    function removeEquation(index) {
+        // Don't allow removing the first equation
+        if (index === 0) return;
+
+        const container = document.querySelector(`.equation-container[data-index="${index}"]`);
+        if (container) {
+            container.remove();
+            // Remove the expression from the calculator
+            calculator.removeExpression({ id: `graph${index}` });
+            updateGraph();
+        }
+    }
+
+    // Function to update the graph with all equations
+    function updateGraph() {
+        // Clear all expressions first
+        calculator.setExpressions([]);
+        let hasValidEquation = false;
+
+        document.querySelectorAll('.equation-container').forEach((container, index) => {
+            const input = document.getElementById(`equation-${index}`);
+            const equation = input.value.trim();
+            
+            if (equation) {
+                hasValidEquation = true;
+                const formattedEquation = formatEquation(equation);
+                calculator.setExpression({
+                    id: `graph${index}`,
+                    latex: formattedEquation
+                });
+            }
+        });
+
+        createGraphButton.disabled = !hasValidEquation;
+    }
+
     script.onload = () => {
         calculator = Desmos.GraphingCalculator(graphContainer, {
             keypad: false,
@@ -53,25 +123,28 @@ addOnUISdk.ready.then(async () => {
             zoomButtons: false
         });
 
-        // Update graph preview on input change
-        equationInput.addEventListener("input", () => {
-            const equation = equationInput.value.trim();
-            calculator.setExpressions([]);
-            if (equation) {
-                const formattedEquation = formatEquation(equation);
-                calculator.setExpression({
-                    id: "graph1",
-                    latex: formattedEquation
-                });
-                createGraphButton.disabled = false;
-            } else {
-                createGraphButton.disabled = true;
-            }
+        // Add event listener for the first equation input
+        document.getElementById('equation-0').addEventListener('input', updateGraph);
+
+        // Add event listener for the "Add Equation" button
+        addEquationButton.addEventListener('click', () => {
+            const newContainer = createEquationInput(equationCount);
+            equationsContainer.appendChild(newContainer);
+            
+            // Add event listener for the new input
+            document.getElementById(`equation-${equationCount}`).addEventListener('input', updateGraph);
+            
+            equationCount++;
         });
 
         createGraphButton.addEventListener("click", async () => {
-            const equation = equationInput.value.trim();
-            const formattedEquation = formatEquation(equation);
+            const equations = Array.from(document.querySelectorAll('.equation-container'))
+                .map(container => {
+                    const input = document.getElementById(`equation-${container.dataset.index}`);
+                    return input.value.trim();
+                })
+                .filter(equation => equation);
+
             const imageDataUrl = calculator.screenshot({
                 width: 800,
                 height: 600,
@@ -84,7 +157,7 @@ addOnUISdk.ready.then(async () => {
             try {
                 // Add the image to the Adobe Express document
                 await addOnUISdk.app.document.addImage(imageBlob, {
-                    title: `Graph of ${equation}`,
+                    title: `Graph of ${equations.join(', ')}`,
                     author: "Generated by Graphing Add-on"
                 });
                 console.log("Graph image added to the document.");
