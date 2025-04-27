@@ -224,11 +224,46 @@
 
         .question-container {
             margin-top: 20px;
-            padding: 15px 0;
+            padding: 15px;
             background-color: #f5f5f5;
             border-radius: 4px;
+        }
+
+        .question-container input[type="text"] {
             width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 14px;
+            margin-bottom: 12px;
             box-sizing: border-box;
+        }
+
+        .difficulty-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .difficulty-row label {
+            font-size: 14px;
+            color: #4a5568;
+        }
+
+        .difficulty-row select {
+            padding: 8px 24px 8px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 14px;
+            background-color: white;
+            cursor: pointer;
+        }
+
+        .difficulty-row select:focus {
+            outline: none;
+            border-color: #4299e1;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
         }
 
         .question-types {
@@ -338,6 +373,11 @@
             cursor: pointer;
             transition: all 0.2s ease;
             border: 1px solid transparent;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 100px;
+            height: 36px;
         }
 
         .card-button.show-answer {
@@ -577,9 +617,10 @@
 
         <div class="question-container">
             <h3>Generate Math Questions</h3>
-            <div class="input-row">
-                <input type="text" id="question-type" 
-                    placeholder="Enter topic (e.g., derivatives, integrals, intercepts)" />
+            <input type="text" id="question-type" 
+                placeholder="Enter topic (e.g., derivatives, integrals, intercepts)" />
+            <div class="difficulty-row">
+                <label for="difficulty">Difficulty:</label>
                 <select id="difficulty">
                     <option value="easy">Easy</option>
                     <option value="medium" selected>Medium</option>

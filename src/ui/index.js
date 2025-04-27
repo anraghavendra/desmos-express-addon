@@ -268,29 +268,30 @@ y = 0.5x^2 - 2x - 1`
         const showAnswerBtn = document.createElement('button');
         showAnswerBtn.className = 'card-button show-answer';
         showAnswerBtn.textContent = 'Show Answer';
-        showAnswerBtn.onclick = () => {
-            if (answerText.style.display === 'none') {
-                answerText.style.display = 'block';
-                showAnswerBtn.textContent = 'Hide Answer';
-            } else {
-                answerText.style.display = 'none';
-                showAnswerBtn.textContent = 'Show Answer';
-            }
-        };
-        
-        const copyBtn = document.createElement('button');
-        copyBtn.className = 'card-button copy';
-        copyBtn.textContent = 'Copy';
-        copyBtn.onclick = () => {
-            navigator.clipboard.writeText(`Question: ${question}\nAnswer: ${answer}`);
-            copyBtn.textContent = 'Copied!';
-            setTimeout(() => copyBtn.textContent = 'Copy', 1000);
-        };
         
         const answerText = document.createElement('div');
         answerText.className = 'answer-text';
         answerText.textContent = answer;
         answerText.style.display = 'none';
+        
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'card-button copy';
+        copyBtn.textContent = 'Copy';
+        
+        showAnswerBtn.onclick = () => {
+            const isAnswerShown = answerText.style.display !== 'none';
+            answerText.style.display = isAnswerShown ? 'none' : 'block';
+            showAnswerBtn.textContent = isAnswerShown ? 'Show Answer' : 'Hide Answer';
+            copyBtn.textContent = 'Copy';  // Reset copy button text
+        };
+        
+        copyBtn.onclick = () => {
+            const isAnswerShown = answerText.style.display !== 'none';
+            const textToCopy = isAnswerShown ? answer : question;
+            navigator.clipboard.writeText(textToCopy);
+            copyBtn.textContent = isAnswerShown ? 'Answer Copied!' : 'Question Copied!';
+            setTimeout(() => copyBtn.textContent = 'Copy', 1000);
+        };
         
         cardActions.appendChild(showAnswerBtn);
         cardActions.appendChild(copyBtn);
